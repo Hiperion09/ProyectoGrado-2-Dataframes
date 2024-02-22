@@ -1,12 +1,12 @@
 import time
 from nba_api.stats.endpoints import leagueleaders, leaguegamelog, teamgamelog, teamestimatedmetrics, boxscoreadvancedv2, boxscoreadvancedv3, playerestimatedmetrics, leaguedashplayerptshot
 import pandas as pd
-import git
+from git import Repo
 from datetime import date
 
 def LideresAnotadoresLiga(temporada, tipo_temporada, tipoModo):
     # Agregar un retraso de 6 segundos
-    time.sleep(6)
+    time.sleep(2)
     datos_api = leagueleaders.LeagueLeaders(season=temporada,
                                             season_type_all_star=tipo_temporada,
                                             per_mode48=tipoModo,
@@ -16,7 +16,7 @@ def LideresAnotadoresLiga(temporada, tipo_temporada, tipoModo):
 
 def LeagueGameLog(direction, id_league, temporada, tipo_temporada):
     # Agregar un retraso de 6 segundos
-    time.sleep(6)
+    time.sleep(2)
     datos_api = leaguegamelog.LeagueGameLog(
         direction=direction,
         league_id=id_league,
@@ -27,7 +27,7 @@ def LeagueGameLog(direction, id_league, temporada, tipo_temporada):
 
 def teamGameLog(temporada, tipo_temporada, id_team):
     # Agregar un retraso de 6 segundos
-    time.sleep(6)
+    time.sleep(2)
     datos_api = teamgamelog.TeamGameLog(
         season=temporada,
         season_type_all_star=tipo_temporada,
@@ -38,7 +38,7 @@ def teamGameLog(temporada, tipo_temporada, id_team):
 
 def TeamEstimatedMetrics(id_league, temporada, tipo_temporada):
     # Agregar un retraso de 6 segundos
-    time.sleep(6)
+    time.sleep(2)
     datos_api = teamestimatedmetrics.TeamEstimatedMetrics(
         league_id=id_league,
         season=temporada,
@@ -49,7 +49,7 @@ def TeamEstimatedMetrics(id_league, temporada, tipo_temporada):
 
 def boxScoreAdvanced2(id_partido):
     # Agregar un retraso de 6 segundos
-    time.sleep(6)
+    time.sleep(2)
     datos_api = boxscoreadvancedv2.BoxScoreAdvancedV2(
         game_id=id_partido
         )
@@ -58,7 +58,7 @@ def boxScoreAdvanced2(id_partido):
 
 def boxScoreAdvanced3(id_partido):
     # Agregar un retraso de 6 segundos
-    time.sleep(6)
+    time.sleep(2)
     datos_api = boxscoreadvancedv3.BoxScoreAdvancedV3(
         game_id=id_partido
         )
@@ -67,7 +67,7 @@ def boxScoreAdvanced3(id_partido):
 
 def PlayerEstimatedMetrics(id_liga, temporada, tipo_temporada):
     # Agregar un retraso de 6 segundos
-    time.sleep(6)
+    time.sleep(2)
     datos_api = playerestimatedmetrics.PlayerEstimatedMetrics(
         league_id=id_liga,
         season=temporada,
@@ -78,7 +78,7 @@ def PlayerEstimatedMetrics(id_liga, temporada, tipo_temporada):
 
 def playerShot(id_liga, per_mode, temporada, tipo_temporada):
     # Agregar un retraso de 6 segundos
-    time.sleep(6)
+    time.sleep(2)
     datos_api = leaguedashplayerptshot.LeagueDashPlayerPtShot(
         league_id=id_liga,
         per_mode_simple=per_mode,
@@ -91,6 +91,7 @@ def playerShot(id_liga, per_mode, temporada, tipo_temporada):
 def subir_dataframe_a_github(dataframe, nombre_archivo, repositorio_local):
   hoy = date.today()
   fecha_formateada = hoy.strftime("%d/%m/%Y")
+  
   """
   Sube un dataframe a un repositorio de Github.
 
@@ -103,22 +104,32 @@ def subir_dataframe_a_github(dataframe, nombre_archivo, repositorio_local):
   # Convertir el dataframe a csv
   dataframe.to_csv(f"{repositorio_local}/{nombre_archivo}.csv", index=False)
 
-  # Agregar el archivo al repositorio
-  repo = git.Repo(repositorio_local)
-  repo.index.add(f"{nombre_archivo}.csv")
+  try:
+    # Agregar el archivo al repositorio
+    repo = Repo(repositorio_local)
+    # Código que se intenta ejecutar
+    repo.index.add(f"{nombre_archivo}.csv")
+    # Hacer un commit y push
+    repo.index.commit(message=f"{fecha_formateada}: Archivo {nombre_archivo}")
+    repo.remote('origin').push(refspec="main")
+    print('Dataframes subidos correctamente')
+  except Exception as e:
+    # Código que se ejecuta si se produce una excepción
+    print(f"Ocurrió un error: {e}")
 
-  # Hacer un commit y push
-  repo.commit(message=f"{fecha_formateada}: Archivo {nombre_archivo}")
-  repo.remote().push()
+repositorio_local = "C:/ProyectoGrado2/Dataframes-nba"
+dataframe = LideresAnotadoresLiga('2023-24', 'Regular Season', 'PerGame')
+dataframe2 = LeagueGameLog('DESC', '00', '2023-24', 'Regular Season') #Historial de todos los partidos jugados hasta la fecha
+dataframe3 = teamGameLog(temporada='2023-24', tipo_temporada='Regular Season', id_team='1610612744') #Estadisticas de un equipo de cada partido
+dataframe4 = TeamEstimatedMetrics(id_league='00' ,temporada='2023-24', tipo_temporada='Regular Season') #Metricas avanzadas por equipo GENERAL
+dataframe5 = boxScoreAdvanced3(id_partido='0022300051') #Boxscore de estadisticas avanzadas por jugador o equipo POR PARTIDO
+dataframe6 = PlayerEstimatedMetrics(id_liga='00', temporada='2023-24', tipo_temporada='Regular Season') #Boxscore de estadisticas avanzadas por jugador o equipo POR PARTIDO
+dataframe7 = playerShot(id_liga='00',per_mode='PerGame', temporada='2023-24', tipo_temporada='Regular Season') #Datos de tiros de jugadores
 
-repositorio_local = "C:\\ProyectoGrado2"
-#dataframe = LideresAnotadoresLiga('2023-24', 'Regular Season', 'PerGame')
-#dataframe2 = LeagueGameLog('DESC', '00', '2023-24', 'Regular Season') #Historial de todos los partidos jugados hasta la fecha
-#dataframe3 = teamGameLog(temporada='2023-24', tipo_temporada='Regular Season', id_team='1610612744') #Estadisticas de un equipo de cada partido
-#dataframe4 = TeamEstimatedMetrics(id_league='00' ,temporada='2023-24', tipo_temporada='Regular Season') #Metricas avanzadas por equipo GENERAL
-#dataframe6 = boxScoreAdvanced3(id_partido='0022300051') #Boxscore de estadisticas avanzadas por jugador o equipo POR PARTIDO
-dataframe7 = PlayerEstimatedMetrics(id_liga='00', temporada='2023-24', tipo_temporada='Regular Season') #Boxscore de estadisticas avanzadas por jugador o equipo POR PARTIDO
-dataframe8 = playerShot(id_liga='00',per_mode='PerGame', temporada='2023-24', tipo_temporada='Regular Season') #Datos de tiros de jugadores
-subir_dataframe_a_github(dataframe7, "lideres_anotadores", repositorio_local)
-# Subir dataframe de tiros de jugadores
-subir_dataframe_a_github(dataframe8, "tiros_jugadores", repositorio_local)
+subir_dataframe_a_github(dataframe, "lideres_anotadores", repositorio_local)
+subir_dataframe_a_github(dataframe2, "league_gamelog", repositorio_local)
+subir_dataframe_a_github(dataframe3, "team_gamelog", repositorio_local)
+subir_dataframe_a_github(dataframe4, "team_estimated_metrics", repositorio_local)
+subir_dataframe_a_github(dataframe5, "box_score_advanced", repositorio_local)
+subir_dataframe_a_github(dataframe6, "player_estimated_metrics", repositorio_local)
+subir_dataframe_a_github(dataframe7, "player_shot", repositorio_local)
